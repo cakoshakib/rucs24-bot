@@ -71,7 +71,7 @@ class LogCog(commands.Cog):
 
         embed = discord.Embed(
             title="Message Deletion",
-            description=message.author.name,
+            description=f"{message.author.name} in <#{message.channel.id}>",
             color=0xFF0000
         )
 
@@ -104,7 +104,7 @@ class LogCog(commands.Cog):
 
         embed = discord.Embed(
             title="Message Edit",
-            description=message_before.author.name,
+            description=f"{message_before.author.name} in <#{message_before.channel.id}>",
             color=0xFF0000
         )
         embed.add_field(name="Before", value=message_before.content, inline=False)

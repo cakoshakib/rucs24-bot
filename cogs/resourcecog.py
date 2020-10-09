@@ -75,7 +75,7 @@ class ResourceCog(commands.Cog):
         """Enter ID of channel to set as resource channel"""
         rsc_channel = await self.bot.fetch_channel(channel_id)
 
-        if rsc_channel == None:
+        if rsc_channel is None:
             await ctx.send("Invalid channel id")
             return
 
@@ -95,7 +95,7 @@ class ResourceCog(commands.Cog):
         """Enter ID of channel to set as review channel"""
         rvw_channel = await self.bot.fetch_channel(channel_id)
 
-        if rvw_channel == None:
+        if rvw_channel is None:
             await ctx.send("Invalid channel id")
             return
 

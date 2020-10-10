@@ -4,14 +4,21 @@ import json
 from discord.utils import get
 
 
-def jsonsave(cfg):
+def json_save(resource_dict):
     with open("data/resources.json", "w") as f:
-        json.dump(cfg, f)
+        json.dump(resource_dict, f)
 
 
-def jsonopen():
-    with open("data/resources.json", "r") as f:
-        return json.load(f)
+def json_load():
+    try:
+        with open("data/resources.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        with open("data/resources.json", "w") as f:
+            f.write("{}")
+            f.close()
+        with open("data/resources.json", "r") as f:
+            return json.load(f)
 
 
 def create_embed(msgauth, name, link, desc, tags):
@@ -39,8 +46,8 @@ def edit_embed(rinfo):
 
 async def send_resource(rsc_channel, msg):
     await msg.delete()
-    cfg = jsonopen()
-    rinfo = cfg[str(msg.id)]
+    resource_dict = json_load()
+    rinfo = resource_dict[str(msg.id)]
     rscembed = discord.Embed(
         title=rinfo["name"], description=rinfo["desc"], color=0x66FF99
     )
@@ -48,8 +55,8 @@ async def send_resource(rsc_channel, msg):
     rscembed.add_field(name="Tags", value=rinfo["tags"], inline=True)
     rscembed.set_footer(text="Submitted by " + rinfo["msgauth"])
     await rsc_channel.send(embed=rscembed)
-    del cfg[str(msg.id)]
-    jsonsave(cfg)
+    del resource_dict[str(msg.id)]
+    json_save(resource_dict)
 
 
 class ResourceCog(commands.Cog):
@@ -107,7 +114,7 @@ class ResourceCog(commands.Cog):
             json.dump(cfg, f)
 
         self.review_channel_id = channel_id
-        await ctx.send(f"{rvw_channel.name} has been set as resources channel")
+        await ctx.send(f"{rvw_channel.name} has been set as review channel")
 
     @commands.command()
     async def suggestresource(self, ctx, rscname, rsclink, rscdesc, *, rsctags):
@@ -120,31 +127,31 @@ class ResourceCog(commands.Cog):
         )
         await message.add_reaction("✔️")
         await message.add_reaction("❎")
-        cfg = jsonopen()
+        resource_dict = json_load()
 
-        cfg[str(message.id)] = {}
-        rinfo = cfg[str(message.id)]
+        resource_dict[str(message.id)] = {}
+        rinfo = resource_dict[str(message.id)]
         rinfo["name"] = rscname
         rinfo["link"] = rsclink
         rinfo["desc"] = rscdesc
         rinfo["tags"] = rsctags
         rinfo["msgauth"] = str(ctx.message.author.name)
 
-        jsonsave(cfg)
+        json_save(resource_dict)
 
     @commands.command()
     @commands.has_role("Bot Commander")
     async def rscedit(self, ctx, msg_id, editedmsg):
         """Edit a resource description by inputting the id of the message and the new description"""
-        cfg = jsonopen()
+        resource_dict = json_load()
         try:
-            cfg[str(msg_id)]["desc"] = editedmsg
+            resource_dict[str(msg_id)]["desc"] = editedmsg
         except KeyError:
             await ctx.send("That is not a valid ID")
         channel = self.bot.get_channel(int(self.review_channel_id))
         message = await channel.fetch_message(int(msg_id))
-        await message.edit(embed=edit_embed(cfg[str(msg_id)]))
-        jsonsave(cfg)
+        await message.edit(embed=edit_embed(resource_dict[str(msg_id)]))
+        json_save(resource_dict)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -160,9 +167,9 @@ class ResourceCog(commands.Cog):
                 reaction = get(message.reactions, emoji=payload.emoji.name)
                 if reaction.count > 1:
                     await message.delete()
-                    cfg = jsonopen()
-                    del cfg[str(message.id)]
-                    jsonsave(cfg)
+                    resource_dict = json_load()
+                    del resource_dict[str(message.id)]
+                    json_save(resource_dict)
 
 
 def setup(bot):

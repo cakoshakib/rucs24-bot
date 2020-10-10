@@ -117,7 +117,7 @@ class ResourceCog(commands.Cog):
         await message.add_reaction("✔️")
         await message.add_reaction("❎")
         resource_dict = load_resources()
-        ctx.message.add_reaction("✔️")
+        await ctx.message.add_reaction("✔️")
 
         resource_dict[str(message.id)] = {}
         rinfo = resource_dict[str(message.id)]

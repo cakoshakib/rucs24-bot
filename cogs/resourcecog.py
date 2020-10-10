@@ -4,12 +4,12 @@ import json
 from discord.utils import get
 
 
-def json_save(resource_dict):
+def save_resources(resource_dict):
     with open("data/resources.json", "w") as f:
         json.dump(resource_dict, f)
 
 
-def json_load():
+def load_resources():
     try:
         with open("data/resources.json", "r") as f:
             return json.load(f)
@@ -46,7 +46,7 @@ def edit_embed(rinfo):
 
 async def send_resource(rsc_channel, msg):
     await msg.delete()
-    resource_dict = json_load()
+    resource_dict = load_resources()
     rinfo = resource_dict[str(msg.id)]
     rscembed = discord.Embed(
         title=rinfo["name"], description=rinfo["desc"], color=0x66FF99
@@ -56,7 +56,7 @@ async def send_resource(rsc_channel, msg):
     rscembed.set_footer(text="Submitted by " + rinfo["msgauth"])
     await rsc_channel.send(embed=rscembed)
     del resource_dict[str(msg.id)]
-    json_save(resource_dict)
+    save_resources(resource_dict)
 
 
 class ResourceCog(commands.Cog):
@@ -127,7 +127,7 @@ class ResourceCog(commands.Cog):
         )
         await message.add_reaction("✔️")
         await message.add_reaction("❎")
-        resource_dict = json_load()
+        resource_dict = load_resources()
 
         resource_dict[str(message.id)] = {}
         rinfo = resource_dict[str(message.id)]
@@ -137,13 +137,13 @@ class ResourceCog(commands.Cog):
         rinfo["tags"] = rsctags
         rinfo["msgauth"] = str(ctx.message.author.name)
 
-        json_save(resource_dict)
+        save_resources(resource_dict)
 
     @commands.command()
     @commands.has_role("Bot Commander")
     async def rscedit(self, ctx, msg_id, editedmsg):
         """Edit a resource description by inputting the id of the message and the new description"""
-        resource_dict = json_load()
+        resource_dict = load_resources()
         try:
             resource_dict[str(msg_id)]["desc"] = editedmsg
         except KeyError:
@@ -151,7 +151,7 @@ class ResourceCog(commands.Cog):
         channel = self.bot.get_channel(int(self.review_channel_id))
         message = await channel.fetch_message(int(msg_id))
         await message.edit(embed=edit_embed(resource_dict[str(msg_id)]))
-        json_save(resource_dict)
+        save_resources(resource_dict)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -167,9 +167,9 @@ class ResourceCog(commands.Cog):
                 reaction = get(message.reactions, emoji=payload.emoji.name)
                 if reaction.count > 1:
                     await message.delete()
-                    resource_dict = json_load()
+                    resource_dict = load_resources()
                     del resource_dict[str(message.id)]
-                    json_save(resource_dict)
+                    save_resources(resource_dict)
 
 
 def setup(bot):

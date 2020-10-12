@@ -9,9 +9,9 @@ class EnlargeCog(commands.Cog):
     @commands.command(name="avatar", aliases=["Avatar"])
     async def avatar(self, ctx, user: discord.Member):
         """Returns enlarged avatar of @ed user"""
-        embed = discord.Embed(color=discord.Color(0xFFFF), title=f"{user}")
+        embed = discord.Embed(color=discord.Color(0xFFFF), title=str(user))
 
-        embed.set_image(url=f"{user.avatar_url}")
+        embed.set_image(url=user.avatar_url)
 
         await ctx.send(embed=embed)
 
